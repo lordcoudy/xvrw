@@ -373,7 +373,18 @@ def generate_reality_keys(runner: Runner) -> tuple[str, str]:
 def parse_named_key(output: str, key_name: str) -> str:
     pattern = rf"(?im)^\s*{re.escape(key_name)}\s*key\s*:?\s*(\S+)\s*$"
     compact_pattern = rf"(?im)^\s*{re.escape(key_name)}key\s*:?\s*(\S+)\s*$"
-    for candidate in (pattern, compact_pattern):
+    parenthesized_pattern = (
+        rf"(?im)^\s*.*\(\s*{re.escape(key_name)}\s*key\s*\)\s*:?\s*(\S+)\s*$"
+    )
+    parenthesized_compact_pattern = (
+        rf"(?im)^\s*.*\(\s*{re.escape(key_name)}key\s*\)\s*:?\s*(\S+)\s*$"
+    )
+    for candidate in (
+        pattern,
+        compact_pattern,
+        parenthesized_pattern,
+        parenthesized_compact_pattern,
+    ):
         match = re.search(candidate, output)
         if match:
             return match.group(1).strip()

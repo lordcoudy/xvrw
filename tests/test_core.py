@@ -155,6 +155,16 @@ Endpoint = engage.cloudflareclient.com:2408
         )
         self.assertEqual(generate_reality_keys(runner), ("priv123", "pub456"))
 
+    def test_generate_reality_keys_accepts_password_public_key_output(self):
+        runner = X25519Runner(
+            stdout=(
+                "PrivateKey: priv123\n"
+                "Password (PublicKey): pub456\n"
+                "Hash32: hash789\n"
+            ),
+        )
+        self.assertEqual(generate_reality_keys(runner), ("priv123", "pub456"))
+
 
 if __name__ == "__main__":
     unittest.main()
