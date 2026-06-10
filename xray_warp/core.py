@@ -346,7 +346,7 @@ def install_xray(runner: Runner) -> None:
         "https://github.com/XTLS/Xray-install/raw/main/install-release.sh",
         timeout=60,
     ).read()
-    runner.run(["bash", "-s", "@", "install"], input_text=script.decode("utf-8"))
+    runner.run(["bash", "-c", script.decode("utf-8"), "@", "install"])
     runner.run(["xray", "version"])
 
 

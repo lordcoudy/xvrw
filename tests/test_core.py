@@ -12,6 +12,7 @@ from xray_warp.core import (
     build_initial_state,
     build_vless_link,
     build_xray_config,
+    install_xray,
     normalize_wgcf_profile,
     save_state,
     load_state,
@@ -32,6 +33,15 @@ class FakeRunner(Runner):
                 raise XrayWarpError("bad config")
             return result
         return CommandResult(args, 0, "Configuration OK.", "")
+
+
+class RecordingRunner(Runner):
+    def __init__(self):
+        self.calls = []
+
+    def run(self, args, *, cwd=None, check=True, input_text=None):
+        self.calls.append((args, input_text))
+        return CommandResult(args, 0, "ok", "")
 
 
 def sample_state():
@@ -103,6 +113,15 @@ Endpoint = engage.cloudflareclient.com:2408
                     )
             self.assertEqual(json.loads(path.read_text(encoding="utf-8")), original)
             self.assertTrue((Path(tmp) / "config.json.bak.123").exists())
+
+    def test_install_xray_uses_official_bash_c_shape(self):
+        runner = RecordingRunner()
+        with patch("xray_warp.core.urllib.request.urlopen") as urlopen:
+            urlopen.return_value.read.return_value = b"echo installer"
+            install_xray(runner)
+        self.assertEqual(runner.calls[0][0], ["bash", "-c", "echo installer", "@", "install"])
+        self.assertIsNone(runner.calls[0][1])
+        self.assertEqual(runner.calls[1][0], ["xray", "version"])
 
 
 if __name__ == "__main__":
