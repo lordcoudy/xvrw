@@ -362,16 +362,22 @@ def install_wgcf(runner: Runner) -> None:
 
 def generate_reality_keys(runner: Runner) -> tuple[str, str]:
     result = runner.run(["xray", "x25519"])
-    private_key = ""
-    public_key = ""
-    for line in result.stdout.splitlines():
-        if line.lower().startswith("private key:"):
-            private_key = line.split(":", 1)[1].strip()
-        if line.lower().startswith("public key:"):
-            public_key = line.split(":", 1)[1].strip()
+    output = f"{result.stdout}\n{result.stderr}"
+    private_key = parse_named_key(output, "private")
+    public_key = parse_named_key(output, "public")
     if not private_key or not public_key:
         raise XrayWarpError("Could not parse xray x25519 output.")
     return private_key, public_key
+
+
+def parse_named_key(output: str, key_name: str) -> str:
+    pattern = rf"(?im)^\s*{re.escape(key_name)}\s*key\s*:?\s*(\S+)\s*$"
+    compact_pattern = rf"(?im)^\s*{re.escape(key_name)}key\s*:?\s*(\S+)\s*$"
+    for candidate in (pattern, compact_pattern):
+        match = re.search(candidate, output)
+        if match:
+            return match.group(1).strip()
+    return ""
 
 
 def setup_wgcf(runner: Runner, workdir: Path = STATE_DIR) -> None:

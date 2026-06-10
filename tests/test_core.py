@@ -12,6 +12,7 @@ from xray_warp.core import (
     build_initial_state,
     build_vless_link,
     build_xray_config,
+    generate_reality_keys,
     install_wgcf,
     install_xray,
     normalize_wgcf_profile,
@@ -43,6 +44,15 @@ class RecordingRunner(Runner):
     def run(self, args, *, cwd=None, check=True, input_text=None):
         self.calls.append((args, input_text))
         return CommandResult(args, 0, "ok", "")
+
+
+class X25519Runner(Runner):
+    def __init__(self, stdout="", stderr=""):
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def run(self, args, *, cwd=None, check=True, input_text=None):
+        return CommandResult(args, 0, self.stdout, self.stderr)
 
 
 def sample_state():
@@ -132,6 +142,18 @@ Endpoint = engage.cloudflareclient.com:2408
                     urlopen.return_value.read.return_value = b"binary"
                     install_wgcf(runner)
         self.assertEqual(runner.calls[0][0][-1], "--help")
+
+    def test_generate_reality_keys_accepts_compact_and_stderr_output(self):
+        runner = X25519Runner(
+            stderr="PrivateKey: priv123\nPublicKey: pub456\n",
+        )
+        self.assertEqual(generate_reality_keys(runner), ("priv123", "pub456"))
+
+    def test_generate_reality_keys_accepts_spaced_stdout_output(self):
+        runner = X25519Runner(
+            stdout="Private key: priv123\nPublic key: pub456\n",
+        )
+        self.assertEqual(generate_reality_keys(runner), ("priv123", "pub456"))
 
 
 if __name__ == "__main__":
