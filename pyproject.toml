@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xray-warp"
+version = "0.1.0"
+description = "Ubuntu 22.04 installer for Xray Reality Vision over WARP"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+xray-warp = "xray_warp.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["xray_warp*"]
