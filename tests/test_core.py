@@ -12,6 +12,7 @@ from xray_warp.core import (
     build_initial_state,
     build_vless_link,
     build_xray_config,
+    install_wgcf,
     install_xray,
     normalize_wgcf_profile,
     save_state,
@@ -122,6 +123,15 @@ Endpoint = engage.cloudflareclient.com:2408
         self.assertEqual(runner.calls[0][0], ["bash", "-c", "echo installer", "@", "install"])
         self.assertIsNone(runner.calls[0][1])
         self.assertEqual(runner.calls[1][0], ["xray", "version"])
+
+    def test_install_wgcf_checks_help_not_version_flag(self):
+        runner = RecordingRunner()
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch("xray_warp.core.urllib.request.urlopen") as urlopen:
+                with patch("xray_warp.core.WGCF_BIN_PATH", Path(tmp) / "wgcf"):
+                    urlopen.return_value.read.return_value = b"binary"
+                    install_wgcf(runner)
+        self.assertEqual(runner.calls[0][0][-1], "--help")
 
 
 if __name__ == "__main__":

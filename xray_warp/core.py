@@ -357,7 +357,7 @@ def install_wgcf(runner: Runner) -> None:
     os.chmod(tmp, 0o755)
     shutil.move(str(tmp), WGCF_BIN_PATH)
     os.chmod(WGCF_BIN_PATH, 0o755)
-    runner.run([str(WGCF_BIN_PATH), "--version"])
+    runner.run([str(WGCF_BIN_PATH), "--help"])
 
 
 def generate_reality_keys(runner: Runner) -> tuple[str, str]:
